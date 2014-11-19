@@ -1,0 +1,117 @@
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>DINFO GUI</title>
+  <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="../excanvas.js"></script><![endif]-->
+  
+  <link rel="stylesheet" type="text/css" href="jquery.jqplot.min.css" />
+  
+  <!-- BEGIN: load jquery -->
+  <script language="javascript" type="text/javascript" src="jquery-1.4.4.min.js"></script>
+  <!-- END: load jquery -->
+  
+  <!-- BEGIN: load jqplot -->
+  <script language="javascript" type="text/javascript"  src="jquery.jqplot.min.js"></script>
+	<script language="javascript" type="text/javascript" src="plugins/jqplot.canvasTextRenderer.js"></script> 
+	<script language="javascript" type="text/javascript" src="plugins/jqplot.canvasAxisTickRenderer.js"></script> 
+	<script language="javascript" type="text/javascript" src="plugins/jqplot.dateAxisRenderer.js"></script> 
+
+  <!-- END: load jqplot -->
+  <script type="text/javascript" language="javascript">
+
+
+var datahist = 120;
+var options = {
+	legend:{show:true, location:'sw'},
+	title:'DSTAT INFO',
+	highlighter: {useAxesFormatters:true, sizeAdjust: 10, tooltipLocation: 'n', tooltipSeparator: ' is ' },
+	nocursor: {show: false},
+	cursor: {zoom:true, showTooltip:false},
+	axes:{
+			xaxis:{
+				renderer:$.jqplot.DateAxisRenderer,
+				rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer},
+				numberTicks: 120,
+				autoscale: true,
+				tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+				tickOptions:{angle: -60,fontSize: '7pt', formatString: '%H:%M:%S'},
+				//tickInterval: 60
+			},
+			yaxis: {
+				numberTicks:25, 
+				showLabel: true
+			}
+	},
+	series: []
+	//series:[ {label: 'Temp &deg;C', lineWidth:1, showMarker:false, color: '#00AA00' }	]
+};
+
+var default_series = {label: 'Temp &deg;C', lineWidth:1, showMarker:false, color: '#00AA00' };
+var lines = new Array();
+var total = 0;
+var plot1;
+var line1 = [[1244337000000, 10], [1244337300000, 1], [1244337600000, 20], [1244337900000, 40], [1244338200000, 10]];
+
+function UpdateTimer()
+{
+	var url = "/dinfo/dstat.cgi";
+	// data.data is the numbers;
+	// data.header are the headers
+	var t = $.getJSON(url, function(data,Status){
+		console.log( "Got URL" );
+		var i;
+		var d = new Date();
+		var now = d.getTime();  //d.toTimeString().substr(0,8);
+		if( total == 0 ) 
+		{
+			total++;
+			for( i=0;i < data.data.length; i++ )
+			{
+				var series = { lineWidth:1, showMarker:false };
+				series.label = data.header[i];
+				options.series.push( series );
+				var value = data.data[i];
+				lines[i] = [];
+				for( n=120;n>0;n--){
+					lines[i].push( [now-(n*1000),0] );
+				}
+				lines[i].push( [now,value] );
+				//console.log( "adding " + i );
+			}
+			plot1 = $.jqplot('chart1', lines, options);	
+		} else {
+			total++;
+			//plot1 = $("#chart1");
+			for( i=0;i < data.data.length; i++ )
+			{
+				lines[i].push( [ now,data.data[i] ] );
+				if( lines[i].length > 120 ) {
+					lines[i].shift();
+				}
+				plot1.series[i].data = lines[i];
+				//plot1.series[i].data.push( [ now,data.data[i] ] );
+				//plot1.drawSeries({}, i);			
+			}
+			plot1.resetAxesScale();
+			plot1.replot();
+		}
+		return total;
+	} );
+	setTimeout("UpdateTimer()", 2000 );
+}
+  
+$(document).ready(function(){
+	$.jqplot.config.enablePlugins = true;
+
+	UpdateTimer();
+});
+  
+  //$.getJSON(url, function(data,Status) {	$.jqplot('chart_[% wig.widget_id %]', data.lines, data);	} );
+  
+</script>
+</head>
+<body>
+<?php include "nav.inc"; ?>
+    <div id="chart1" style="margin-top:20px; margin-left:20px; width:98%; height:500px;"></div>
+  </body>
+</html>

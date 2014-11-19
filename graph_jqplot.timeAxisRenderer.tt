@@ -1,0 +1,60 @@
+			[% #IF wig.widget_presentation.match('DateLine') %]
+			$.getJSON(url, function(data,Status){
+				var options = {
+					legend:{show:true, location:'sw'},
+					//title:'[% wig.widget_caption %]',
+					highlighter: {useAxesFormatters:true, sizeAdjust: 10, tooltipLocation: 'n', tooltipSeparator: ' is ' },
+					nocursor: {show: false},
+					cursor: {zoom:true, showTooltip:false},
+					axes:{
+							xaxis:{
+								renderer:$.jqplot.DateAxisRenderer,
+								rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer},
+								autoscale: true,
+								tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+								tickOptions:{angle: -30,fontSize: '7pt', formatString: '%d %H:%M'},
+								tickInterval:'1 hour'
+							},
+							yaxis: {
+								numberTicks:11, 
+								showLabel: true
+							}
+					},
+					series:[ {label: 'Temp &deg;C', lineWidth:1, showMarker:false, color: '#00AA00' }
+							]
+				};
+
+				if( data.axes != undefined ) {
+					options.axes = data.axes;
+					if( data.axes.xaxis.renderer != undefined ) {
+						options.axes.xaxis.renderer = eval( data.axes.xaxis.renderer );
+					} else {
+						options.axes.xaxis.renderer = $.jqplot.DateAxisRenderer;
+						options.axes.xaxis.rendererOptions = {tickRenderer:$.jqplot.CanvasAxisTickRenderer};
+					}
+					if( data.axes.xaxis.tickRenderer != undefined ) {
+						options.axes.xaxis.tickRenderer = eval( data.axes.xaxis.tickRenderer );
+					} else {
+						options.axes.xaxis.tickRenderer = $.jqplot.CanvasAxisTickRenderer;
+					}
+					
+					if( data.axes.yaxis.renderer != undefined ) {
+						options.axes.yaxis.renderer = eval( data.axes.yaxis.renderer );
+					}
+				}
+				
+				if( data.xaxis ) 
+				{
+					if( data.xaxis.tickOptions != undefined )  { options.axes.xaxis.tickOptions = data.xaxis.tickOptions; }
+					if( data.xaxis.tickInterval != undefined ) { options.axes.xaxis.tickInterval = data.xaxis.tickInterval; }
+					if( data.xaxis.min != undefined ) { options.axes.xaxis.min = data.xaxis.min; }
+					if( data.xaxis.max != undefined ) { options.axes.xaxis.max = data.xaxis.max; }
+				}
+				
+				if( data.series != undefined ) {
+					options.series = data.series;
+				}
+				
+				$.jqplot('chart_[% wig.widget_id %]', data.lines, options);
+			});
+			[% # END %]
