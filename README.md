@@ -14,7 +14,7 @@ You can add new features to the html by changing the options of the graph proper
   * Copy fils to your apache/web server directory.
   * Point browser to server/dinfo
 
-And you will see the cool 3D Viewer
+And you will see this view of the stats live.
 
 ![alt text](dstat.png "Screen")
 
