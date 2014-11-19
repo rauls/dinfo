@@ -16,7 +16,7 @@ You can add new features to the html by changing the options of the graph proper
 
 And you will see the cool 3D Viewer
 
-![alt text](screen.png "Screen")
+![alt text](dstat.png "Screen")
 
 
 ## LICENSE
